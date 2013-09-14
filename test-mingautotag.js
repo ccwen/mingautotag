@@ -18,6 +18,14 @@ vows.describe('yadm 4 test suite').addBatch({
 		for (var i=265720;i<265730;i++) {
 			console.log(i,topic.getText(i));
 		}
+	},
+	testgettext:function(topic) {
+		console.time('start batch get text')
+		for (var i=0;i<100000;i++) {
+			text=topic.getText(i)
+			res=topic.customfunc['tokenize'].apply(topic,[text]);
+		}
+		console.timeEnd('start batch get text')
 	}
     },
 

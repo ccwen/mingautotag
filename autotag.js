@@ -40,17 +40,22 @@ var search=function() {
 var rendertag=function(text,hit) {
 	if (!(hit && hit.length)) return text;
 	var res=yase.customfunc({db:DB,name:'tokenize',params:[text]});
+	
 	var i=0,j=0,last=0,voff=0;
 	var output='';
 	while (i<res.length) {
-		if (j<hit.length && hit[j] && voff==hit[j][0]) {
+		while (j<hit.length && voff==hit[j][0]) {
 			output+= '<'+tagname+' len="'+hit[j][1]+'" id="'+hit[j][2] +'"/>';
-			delete hit[j]
 			j++;
 		} 
 		output+=res[i];
 		if (res[i][0]!='<') voff++;
 		i++;
+	}
+	if (j!=hit.length) {
+		console.log('unconsumed hits!',hit.length,j,hit);
+		console.log('IN',text)
+		console.log('OUT',output)
 	}
 	return output;
 }
@@ -61,15 +66,15 @@ var outback = function (s) {
     process.stdout.write(s);
 }
 var autotag=function() {
-
 	var nslot=0,t='',hit=[];
 	var lastslot=-1,addition=0;
 	var meta=yase.getRaw([DB,'meta'],true);
 	//var blocksize = 2 << (db.meta.blockshift -1);
-	var start=0;
+	var onepercent=Math.floor(meta.slotcount / 100);
+	var start=0,i=0;
 	outfile=[];
-	for (var i=0;i<hits.length;i++) {
-		if (i%256==0) outback( 'tagging'+Math.round(100*(i/hits.length)).toString()+'%');
+	while (i<hits.length) {
+		if (i%onepercent==0) outback( 'tagging progress:'+Math.round(100*(i/hits.length)).toString()+'%');
 		nslot=Math.floor(hits[i][0]  / meta.blocksize);
 		if (nslot>lastslot) {
 			var newtext=yase.getText({db:DB,slot:nslot});
@@ -82,17 +87,24 @@ var autotag=function() {
 				start=lastslot;
 				addition+=meta.blocksize;
 			}
+
 			for (var j=start;j<nslot;j++) {
 				t=yase.getText({db:DB,slot:j});
-				if (t) outfile.push(rendertag(t,hit));  //debug add j
+				if (t) outfile.push(t); 
 			}				
 			t=newtext;
 		}
+
+		if (i==hits.length) break;
 		hit.push( [ addition+hits[i][0] % meta.blocksize, hits[i][1] , hits[i][2]] );
-		
+		i++;
 		lastslot=nslot;
 	}
-	for (var j=lastslot;j<meta.slotcount;j++) {
+	if (t) {
+		outfile.push(rendertag(t,hit)); //debug add lastslot	
+	}
+
+	for (var j=lastslot+1;j<meta.slotcount;j++) {
 		outfile.push(yase.getText({db:DB,slot:j})); 
 	}
 }
