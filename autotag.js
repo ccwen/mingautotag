@@ -43,8 +43,9 @@ var rendertag=function(text,hit) {
 	var i=0,j=0,last=0,voff=0;
 	var output='';
 	while (i<res.length) {
-		if (j<hit.length && voff==hit[j][0]) {
+		if (j<hit.length && hit[j] && voff==hit[j][0]) {
 			output+= '<'+tagname+' len="'+hit[j][1]+'" id="'+hit[j][2] +'"/>';
+			delete hit[j]
 			j++;
 		} 
 		output+=res[i];
@@ -83,7 +84,7 @@ var autotag=function() {
 			}
 			for (var j=start;j<nslot;j++) {
 				t=yase.getText({db:DB,slot:j});
-				if (t) outfile.push(t);  //debug add j
+				if (t) outfile.push(rendertag(t,hit));  //debug add j
 			}				
 			t=newtext;
 		}
@@ -112,4 +113,4 @@ console.timeEnd('autotag')
 console.time('writefile')
 writetofile();
 console.timeEnd('writefile')
-process.exit();
+//process.exit();

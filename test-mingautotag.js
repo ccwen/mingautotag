@@ -12,7 +12,7 @@ vows.describe('yadm 4 test suite').addBatch({
 		//assert.equal('\n採用版本：同文書局原版。',r,'gettext');
 	},
 	dump:function(topic) {
-		var r=topic.phraseSearch('孝慈昭憲',{raw:true});
+		var r=topic.phraseSearch('定遠',{raw:true});
 		console.log('q',r)
 		return
 		for (var i=265720;i<265730;i++) {
