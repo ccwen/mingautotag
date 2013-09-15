@@ -125,4 +125,4 @@ console.timeEnd('autotag')
 console.time('writefile')
 writetofile();
 console.timeEnd('writefile')
-//process.exit();
+process.exit();
