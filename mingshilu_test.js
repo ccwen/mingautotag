@@ -1,6 +1,6 @@
 console.log(require('yase').build({
 	dbid:'mingshilu',
-	blockshift:10,
+	slotshift:10,
 	schema:function() {
 		this.toctag(["s","p","qe"]);
 	},  

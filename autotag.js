@@ -69,13 +69,13 @@ var autotag=function() {
 	var nslot=0,t='',hit=[];
 	var lastslot=-1,addition=0;
 	var meta=yase.getRaw([DB,'meta'],true);
-	//var blocksize = 2 << (db.meta.blockshift -1);
+	//var blocksize = 2 << (db.meta.slotshift -1);
 	var onepercent=Math.floor(meta.slotcount / 100);
 	var start=0,i=0;
 	outfile=[];
 	while (i<hits.length) {
 		if (i%onepercent==0) outback( 'tagging progress:'+Math.round(100*(i/hits.length)).toString()+'%');
-		nslot=Math.floor(hits[i][0]  / meta.blocksize);
+		nslot=Math.floor(hits[i][0]  / meta.slotsize);
 		if (nslot>lastslot) {
 			var newtext=yase.getText({db:DB,slot:nslot});
 			if (newtext) {
@@ -85,7 +85,7 @@ var autotag=function() {
 				start=lastslot+1;
 			} else {
 				start=lastslot;
-				addition+=meta.blocksize;
+				addition+=meta.slotsize;
 			}
 
 			for (var j=start;j<nslot;j++) {
@@ -96,7 +96,7 @@ var autotag=function() {
 		}
 
 		if (i==hits.length) break;
-		hit.push( [ addition+hits[i][0] % meta.blocksize, hits[i][1] , hits[i][2]] );
+		hit.push( [ addition+hits[i][0] % meta.slotsize, hits[i][1] , hits[i][2]] );
 		i++;
 		lastslot=nslot;
 	}
