@@ -21,8 +21,13 @@ var search=function() {
 	console.time('searching');
 	for (var i in placeid) {
 		count++;
+		//if (count>1) break;
 		if (count%256==0) outback(count+i+placeid[i]);
-		var r=yase.phraseSearch( { db:DB, tofind:i ,ungroup:true });
+		//debugger;
+		var r=yase.phraseSearch( { db:DB, tofind:i ,raw:true });
+		//var R=yase.search({db:DB,query:i,output:['hits']});
+		//var r=R.hits;
+
 		if (r && r.length) {
 			hitcount+=r.length;
 			// voff, length of place, placeid
@@ -30,6 +35,8 @@ var search=function() {
 		}
 
 	}
+
+	console.log('hitcount',hitcount);
 	console.timeEnd('searching');
 	console.time('sorting');
 	hits.sort(function(a,b){return a[0]-b[0]});
@@ -38,6 +45,7 @@ var search=function() {
 
 /* adding tag */
 var rendertag=function(text,hit) {
+
 	if (!(hit && hit.length)) return text;
 	var res=yase.customfunc({db:DB,name:'tokenize',params:[text]});
 	
@@ -69,17 +77,21 @@ var autotag=function() {
 	var nslot=0,t='',hit=[];
 	var lastslot=-1,addition=0;
 	var meta=yase.getRaw([DB,'meta'],true);
-	//var blocksize = 2 << (db.meta.slotshift -1);
+	var slotsize = 2 << (meta.slotshift -1);
+	
 	var onepercent=Math.floor(meta.slotcount / 100);
 	var start=0,i=0;
 	outfile=[];
 	while (i<hits.length) {
 		if (i%onepercent==0) outback( 'tagging progress:'+Math.round(100*(i/hits.length)).toString()+'%');
-		nslot=Math.floor(hits[i][0]  / meta.slotsize);
+		nslot=Math.floor(hits[i][0]  / slotsize);
 		if (nslot>lastslot) {
 			var newtext=yase.getText({db:DB,slot:nslot});
 			if (newtext) {
-				if (t) outfile.push(rendertag(t,hit)); //debug add lastslot				
+				if (t) {
+					var renderred=rendertag(t,hit);
+					outfile.push(renderred); //debug add lastslot				
+				}
 				hit=[]; 
 				addition=0;
 				start=lastslot+1;
@@ -118,11 +130,19 @@ var writetofile=function() {
 	fs.writeFileSync('output.txt',outfile.join(''),'utf8');
 }
 
-search();
-console.time('autotag')
-autotag();
-console.timeEnd('autotag')
-console.time('writefile')
-writetofile();
-console.timeEnd('writefile')
-process.exit();
+var doit=function() {
+	search();
+	console.time('autotag')
+	autotag();
+	console.timeEnd('autotag')
+	console.time('writefile')
+	writetofile();
+	console.timeEnd('writefile')
+
+}
+if (typeof QUnit!=='undefined') {
+	QUnit.test("debugging autotag",function() {
+		doit();
+		equal(1,1)
+	});
+} else doit();
